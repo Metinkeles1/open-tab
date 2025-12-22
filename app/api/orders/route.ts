@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Order } from "@/app/models/index";
+import { Order } from "@/app/types/index";
 
 const orders: Order[] = [
   { id: "101", customerId: "1", amount: 250, date: "2024-01-15" },

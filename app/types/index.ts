@@ -1,6 +1,7 @@
 export type Customer = {
   id: string;
   name: string;
+  debt: number;
 };
 
 export type Order = {

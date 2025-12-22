@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { Customer } from "@/app/types/index";
 
+// Mock customers data - gerçek uygulamada veritabanından gelecek
 const customers: Customer[] = [
   { id: "1", name: "Alice", debt: 150 },
   { id: "2", name: "Bob", debt: 250 },
@@ -8,30 +9,21 @@ const customers: Customer[] = [
   { id: "4", name: "Diana", debt: 500 },
 ];
 
-export async function GET() {
-  return NextResponse.json(customers);
-}
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const customer = customers.find((c) => c.id === id);
 
-export async function POST(request: NextRequest) {
-  const { name, debt } = await request.json();
-  const newCustomer: Customer = {
-    id: Math.random().toString(36).substr(2, 9),
-    name,
-    debt: debt || 0,
-  };
-  customers.push(newCustomer);
-  return NextResponse.json(newCustomer, { status: 201 });
-}
-
-export async function PUT(request: NextRequest) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
-
-  if (!id) {
-    return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
+  if (!customer) {
+    return NextResponse.json({ error: "Müşteri bulunamadı" }, { status: 404 });
   }
 
+  return NextResponse.json(customer);
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   const { name, debt } = await request.json();
+
   const index = customers.findIndex((c) => c.id === id);
 
   if (index === -1) {
@@ -42,14 +34,11 @@ export async function PUT(request: NextRequest) {
   return NextResponse.json(customers[index]);
 }
 
-export async function DELETE(request: NextRequest) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
-
-  if (!id) {
-    return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
-  }
-
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const { id } = params;
   const index = customers.findIndex((c) => c.id === id);
 
   if (index === -1) {
