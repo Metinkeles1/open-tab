@@ -1,12 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { Customer } from "@/app/types/index";
-
-const customers: Customer[] = [
-  { id: "1", name: "Alice", debt: 150 },
-  { id: "2", name: "Bob", debt: 250 },
-  { id: "3", name: "Charlie", debt: 0 },
-  { id: "4", name: "Diana", debt: 500 },
-];
+import { customers } from "@/app/mock/customers";
 
 export async function GET() {
   return NextResponse.json(customers);
@@ -18,44 +12,9 @@ export async function POST(request: NextRequest) {
     id: Math.random().toString(36).substr(2, 9),
     name,
     debt: debt || 0,
+    personCount: 0,
+    product: "",
   };
   customers.push(newCustomer);
   return NextResponse.json(newCustomer, { status: 201 });
-}
-
-export async function PUT(request: NextRequest) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
-
-  if (!id) {
-    return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
-  }
-
-  const { name, debt } = await request.json();
-  const index = customers.findIndex((c) => c.id === id);
-
-  if (index === -1) {
-    return NextResponse.json({ error: "Müşteri bulunamadı" }, { status: 404 });
-  }
-
-  customers[index] = { ...customers[index], name, debt };
-  return NextResponse.json(customers[index]);
-}
-
-export async function DELETE(request: NextRequest) {
-  const url = new URL(request.url);
-  const id = url.pathname.split("/").pop();
-
-  if (!id) {
-    return NextResponse.json({ error: "ID gerekli" }, { status: 400 });
-  }
-
-  const index = customers.findIndex((c) => c.id === id);
-
-  if (index === -1) {
-    return NextResponse.json({ error: "Müşteri bulunamadı" }, { status: 404 });
-  }
-
-  const deleted = customers.splice(index, 1);
-  return NextResponse.json(deleted[0]);
 }

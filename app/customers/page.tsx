@@ -14,7 +14,7 @@ const Customers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const fetchCustomers = useCallback(async () => {
@@ -36,13 +36,11 @@ const Customers = () => {
     if (!window.confirm("Bu müşteri silinecek. Emin misiniz?")) return;
 
     try {
-      setIsLoading(true);
       await axios.delete(`/api/customers/${id}`);
       setCustomers(customers.filter((c) => c.id !== id));
     } catch {
       setError("Müşteri silinemedi");
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -53,6 +51,36 @@ const Customers = () => {
   const addDebt = (customer: Customer) => {
     setSelectedCustomer(customer);
     setIsModalOpen(true);
+  };
+
+  const handleAddDebt = async (
+    debtAmount: number,
+    personCount: number,
+    product: string
+  ) => {
+    if (!selectedCustomer) return;
+
+    try {
+      const newDebt = selectedCustomer.debt + debtAmount;
+      await axios.put(`/api/customers/${selectedCustomer.id}`, {
+        name: selectedCustomer.name,
+        debt: newDebt,
+        personCount,
+        product,
+      });
+
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === selectedCustomer.id ? { ...c, debt: newDebt, personCount, product } : c
+        )
+      );
+
+      setError(null);
+    } catch (err) {
+      setError("Borç eklenirken bir hata oluştu");
+      console.error("Hata:", err);
+      throw err;
+    }
   };
 
   return (
@@ -99,7 +127,7 @@ const Customers = () => {
           isOpen={isModalOpen}
           customer={selectedCustomer}
           onClose={() => setIsModalOpen(false)}
-          onSuccess={fetchCustomers}
+          onSubmit={handleAddDebt}
         />
       </div>
     </div>

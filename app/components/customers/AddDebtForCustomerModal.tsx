@@ -2,63 +2,52 @@
 
 import React, { useState } from "react";
 import { X } from "lucide-react";
-import axios from "axios";
 import { Customer } from "@/app/types";
+import { toast } from "sonner";
 
 interface AddDebtForCustomerModalProps {
   isOpen: boolean;
   customer: Customer | null;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSubmit: (debtAmount: number, personCount: number, product: string) => Promise<void>;
 }
 
 const AddDebtForCustomerModal = ({
   isOpen,
   customer,
   onClose,
-  onSuccess,
+  onSubmit,
 }: AddDebtForCustomerModalProps) => {
   const [amount, setAmount] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | null>(null);
+  const [personCount, setPersonCount] = useState("");
+  const [product, setProduct] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!customer || !amount || isNaN(parseFloat(amount))) {
-      setMessageType("error");
-      setMessage("Lütfen geçerli bir tutar girin");
+    if (!customer) {
+      toast.error("Müşteri bulunamadı!");
       return;
     }
-
-    const debtAmount = parseFloat(amount);
-    if (debtAmount <= 0) {
-      setMessageType("error");
-      setMessage("Borç miktarı 0'dan büyük olmalıdır");
-      return;
-    }
-
-    setLoading(true);
-    setMessage("");
 
     try {
-      const newDebt = customer.debt + debtAmount;
-      await axios.put(`/api/customers/${customer.id}`, { debt: newDebt });
+      const debtAmount = parseFloat(amount) || 0;
+      const personCountValue = parseInt(personCount) || 0;
+      const productValue = product || "";
 
-      setMessageType("success");
-      setMessage("✓ Borç başarıyla eklendi!");
+      await onSubmit(debtAmount, personCountValue, productValue);
+
+      toast.success("Borç başarıyla eklendi!");
+
       setAmount("");
+      setPersonCount("");
+      setProduct("");
 
       setTimeout(() => {
-        onSuccess?.();
         onClose();
       }, 1500);
     } catch (error) {
-      setMessageType("error");
-      setMessage("✗ Hata oluştu, lütfen tekrar deneyin");
-    } finally {
-      setLoading(false);
+      toast.error("Borç eklenirken bir hata oluştu: " + (error as Error).message);
     }
   };
 
@@ -111,41 +100,40 @@ const AddDebtForCustomerModal = ({
               placeholder="0.00"
               step="0.01"
               min="0"
-              disabled={loading}
-              required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black disabled:bg-gray-100"
             />
+            <input
+              type="number"
+              value={personCount}
+              onChange={(e) => setPersonCount(e.target.value)}
+              placeholder="Kişi Sayısı"
+              step="1"
+              min="0"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black disabled:bg-gray-100 mt-2"
+            />
+            <input
+              type="text"
+              value={product}
+              onChange={(e) => setProduct(e.target.value)}
+              placeholder="Ürün Adı"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black disabled:bg-gray-100 mt-2"
+            />
           </div>
-
-          {/* Message */}
-          {message && (
-            <div
-              className={`py-3 px-4 rounded-lg text-sm font-medium ${
-                messageType === "success"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {message}
-            </div>
-          )}
 
           {/* Actions */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              disabled={loading}
               className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 transition font-medium"
             >
               İptal
             </button>
             <button
               type="submit"
-              disabled={loading || !amount}
               className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
             >
-              {loading ? "..." : "Borç Ekle"}
+              Borç Ekle
             </button>
           </div>
         </form>
