@@ -5,10 +5,17 @@ type CustomerCardProps = {
   customer: Customer;
   onSelect?: () => void;
   balance: number;
+  mode: "creditor" | "debtor";
 };
 
-export default function CustomerCard({ customer, onSelect, balance }: CustomerCardProps) {
+export default function CustomerCard({
+  customer,
+  onSelect,
+  balance,
+  mode,
+}: CustomerCardProps) {
   const hasDebt = balance > 0;
+  const isDebtor = mode === "debtor";
 
   return (
     <button
@@ -38,11 +45,19 @@ export default function CustomerCard({ customer, onSelect, balance }: CustomerCa
       <div className="flex items-center gap-2 shrink-0">
         <div className="text-right">
           <p
-            className={`text-sm font-semibold ${hasDebt ? "text-rose-400" : "text-emerald-400"}`}
+            className={`text-sm font-semibold ${
+              hasDebt
+                ? isDebtor
+                  ? "text-emerald-400"
+                  : "text-rose-400"
+                : "text-slate-400"
+            }`}
           >
             {hasDebt ? `${balance.toLocaleString("tr-TR")}₺` : "—"}
           </p>
-          <p className="text-xs text-slate-500">{hasDebt ? "borç" : "temiz"}</p>
+          <p className="text-xs text-slate-500">
+            {hasDebt ? (isDebtor ? "alacak" : "borç") : "temiz"}
+          </p>
         </div>
         <HiChevronRight className="w-4 h-4 text-slate-500" />
       </div>

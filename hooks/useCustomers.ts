@@ -5,7 +5,7 @@ import { Customer } from "@/types/customer";
 import { FormValues } from "@/components/customers/CustomerForm";
 import { getCustomers, addCustomer, deleteCustomer } from "@/actions/customerActions";
 
-export function useCustomers() {
+export function useCustomers(mode: "creditor" | "debtor" = "creditor") {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export function useCustomers() {
     try {
       setLoading(true);
       setError(null);
-      const data = await getCustomers();
+      const data = await getCustomers(mode);
       setCustomers(data);
     } catch (err) {
       setError("Müşteriler yüklenirken bir hata oluştu.");
@@ -22,7 +22,7 @@ export function useCustomers() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [mode]);
 
   useEffect(() => {
     fetchCustomers();
@@ -34,6 +34,7 @@ export function useCustomers() {
         name: values.name,
         phone: values.phone?.trim() || undefined,
         note: values.note?.trim() || undefined,
+        mode,
       });
       setCustomers((prev) => [newCustomer, ...prev]);
     } catch (err) {

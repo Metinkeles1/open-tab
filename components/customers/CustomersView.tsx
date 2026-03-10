@@ -1,15 +1,22 @@
 "use client";
 import CustomerForm from "@/components/customers/CustomerForm";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useTransactions } from "@/hooks/useTransactions";
 import { HiPlus, HiChevronDown } from "react-icons/hi2";
 import CustomerList from "./CustomerList";
 import CustomerTransactionSheet from "./CustomerTransactionSheet";
 
-const CustomersView = () => {
+type Mode = "creditor" | "debtor";
+
+const CustomersView = ({ mode }: { mode: Mode }) => {
+  const isDebtor = mode === "debtor";
+
   const { customers, handleAddCustomer, handleDeleteCustomer, loading, error } =
-    useCustomers();
+    useCustomers(mode);
+
+  const customerIds = useMemo(() => customers.map((c) => c.id), [customers]);
+
   const {
     balanceByCustomerId,
     transactionByCustomerId,
@@ -17,7 +24,7 @@ const CustomersView = () => {
     debtorCount,
     handleTransaction,
     handleDeleteTransaction,
-  } = useTransactions();
+  } = useTransactions(customerIds);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const selectedCustomer = customers?.find((c) => c.id === selectedCustomerId) || null;
 
@@ -56,28 +63,34 @@ const CustomersView = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col h-full overflow-hidden gap-4">
       {/* Özet Kartlar */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 shrink-0">
         <div className="bg-slate-800 rounded-xl border border-slate-700/60 p-3.5">
-          <p className="text-xs text-slate-400 mb-0.5">Toplam Müşteri</p>
+          <p className="text-xs text-slate-400 mb-0.5">
+            {isDebtor ? "Toplam Müşteri" : "Toplam Alacaklı"}
+          </p>
           <p className="text-2xl font-bold text-slate-100">{customers?.length ?? 0}</p>
         </div>
         <div className="bg-slate-800 rounded-xl border border-slate-700/60 p-3.5">
-          <p className="text-xs text-slate-400 mb-0.5">Toplam Borç</p>
+          <p className="text-xs text-slate-400 mb-0.5">
+            {isDebtor ? "Toplam Alacak" : "Toplam Borç"}
+          </p>
           <p
-            className={`text-2xl font-bold ${totalDebt > 0 ? "text-rose-400" : "text-slate-100"}`}
+            className={`text-2xl font-bold ${totalDebt > 0 ? (isDebtor ? "text-emerald-400" : "text-rose-400") : "text-slate-100"}`}
           >
             {totalDebt > 0 ? `${totalDebt.toLocaleString("tr-TR")}₺` : "—"}
           </p>
           {debtorCount > 0 && (
-            <p className="text-xs text-slate-500 mt-0.5">{debtorCount} kişide borç var</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {debtorCount} kişide {isDebtor ? "alacak" : "borç"} var
+            </p>
           )}
         </div>
       </div>
 
-      {/* Yeni Müşteri Toggle */}
-      <div>
+      {/* Yeni Kayıt Toggle */}
+      <div className="shrink-0">
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
@@ -87,7 +100,7 @@ const CustomersView = () => {
             <span className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
               <HiPlus className="w-3 h-3 text-indigo-400" />
             </span>
-            Yeni Müşteri Ekle
+            {isDebtor ? "Yeni Müşteri Ekle" : "Yeni Alacaklı Ekle"}
           </span>
           <HiChevronDown
             className={`w-4 h-4 text-slate-500 transition-transform ${showForm ? "rotate-180" : ""}`}
@@ -109,6 +122,7 @@ const CustomersView = () => {
         customers={customers}
         balanceByCustomerId={balanceByCustomerId}
         onSelect={setSelectedCustomerId}
+        mode={mode}
       />
 
       <CustomerTransactionSheet
@@ -121,6 +135,7 @@ const CustomersView = () => {
         }
         onDeleteCustomer={handleDeleteCustomer}
         onDeleteTransaction={handleDeleteTransaction}
+        mode={mode}
       />
     </div>
   );

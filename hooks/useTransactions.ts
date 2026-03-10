@@ -8,7 +8,7 @@ import {
   deleteTransactionByCustomerId,
 } from "@/actions/transactionActions";
 
-export function useTransactions(customerId?: string) {
+export function useTransactions(customerIds?: string[]) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function useTransactions(customerId?: string) {
     try {
       setLoading(true);
       setError(null);
-      const data = await getTransactions(customerId);
+      const data = await getTransactions();
       setTransactions(data);
     } catch (err) {
       setError("İşlemler yüklenirken bir hata oluştu.");
@@ -25,11 +25,17 @@ export function useTransactions(customerId?: string) {
     } finally {
       setLoading(false);
     }
-  }, [customerId]);
+  }, []);
 
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
+
+  const idSet = useMemo(
+    () => (customerIds ? new Set(customerIds) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [customerIds?.join(",")],
+  );
 
   const { balanceByCustomerId, transactionByCustomerId, totalDebt, debtorCount } =
     useMemo(() => {
@@ -37,6 +43,9 @@ export function useTransactions(customerId?: string) {
       const grouped: Record<string, Transaction[]> = {};
 
       transactions.forEach((tx) => {
+        // Sadece bu sekmenin müşterilerine ait transaction'ları hesapla
+        if (idSet && !idSet.has(tx.customerId)) return;
+
         balances[tx.customerId] ??= 0;
         grouped[tx.customerId] ??= [];
 
@@ -55,7 +64,7 @@ export function useTransactions(customerId?: string) {
         totalDebt: total,
         debtorCount: debtors,
       };
-    }, [transactions]);
+    }, [transactions, idSet]);
 
   const handleTransaction = async (
     type: "charge" | "payment",

@@ -16,6 +16,7 @@ const CustomerTransactionSheet = ({
   onTransaction,
   onDeleteCustomer,
   onDeleteTransaction,
+  mode,
 }: {
   selectedCustomer: Customer | null;
   balance: number;
@@ -28,7 +29,9 @@ const CustomerTransactionSheet = ({
   ) => Promise<{ ok: boolean; error?: string }>;
   onDeleteCustomer: (customerId: string) => Promise<void>;
   onDeleteTransaction: (customerId: string, transactionId: string) => Promise<void>;
+  mode: "creditor" | "debtor";
 }) => {
+  const isDebtor = mode === "debtor";
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [transactionError, setTransactionError] = useState<string | null>(null);
@@ -69,7 +72,6 @@ const CustomerTransactionSheet = ({
           <div className="relative bg-slate-800 border border-slate-700/60 w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl p-5 shadow-2xl z-10">
             {/* Handle */}
             <div className="w-10 h-1 bg-slate-600 rounded-full mx-auto mb-4 sm:hidden" />
-
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -95,18 +97,22 @@ const CustomerTransactionSheet = ({
                 <HiXMark className="w-4 h-4 text-slate-400" />
               </button>
             </div>
-
             <div
-              className={`rounded-xl p-3 mb-4 ${balance > 0 ? "bg-rose-500/10 border border-rose-500/20" : "bg-emerald-500/10 border border-emerald-500/20"}`}
+              className={`rounded-xl p-3 mb-4 ${balance > 0 ? (isDebtor ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-rose-500/10 border border-rose-500/20") : "bg-slate-700/30 border border-slate-600/30"}`}
             >
-              <p className="text-xs text-slate-400 mb-0.5">Mevcut Borç</p>
-              <p
-                className={`text-xl font-bold ${balance > 0 ? "text-rose-400" : "text-emerald-400"}`}
-              >
-                {balance > 0 ? `${balance.toLocaleString("tr-TR")}₺` : "Borç Yok"}
+              <p className="text-xs text-slate-400 mb-0.5">
+                {isDebtor ? "Mevcut Alacak" : "Mevcut Borç"}
               </p>
-            </div>
-
+              <p
+                className={`text-xl font-bold ${balance > 0 ? (isDebtor ? "text-emerald-400" : "text-rose-400") : "text-slate-400"}`}
+              >
+                {balance > 0
+                  ? `${balance.toLocaleString("tr-TR")}₺`
+                  : isDebtor
+                    ? "Alacak Yok"
+                    : "Borç Yok"}
+              </p>
+            </div>{" "}
             {/* Tutar Input */}
             <div className="relative mb-1">
               <input
@@ -128,7 +134,6 @@ const CustomerTransactionSheet = ({
             {transactionError && (
               <p className="text-xs text-rose-500 mb-2">{transactionError}</p>
             )}
-
             {/* Note Input */}
             <div className="relative mb-1">
               <textarea
@@ -141,7 +146,6 @@ const CustomerTransactionSheet = ({
                 className="w-full rounded-xl border border-slate-700 bg-slate-900/50 pl-3 pr-8 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
               />
             </div>
-
             {/* Butonlar */}
             <div className="grid grid-cols-2 gap-2 mt-2">
               <button
@@ -149,7 +153,7 @@ const CustomerTransactionSheet = ({
                 className="rounded-xl bg-rose-500 hover:bg-rose-600 active:bg-rose-700 px-3 py-3 text-sm font-medium text-white transition-colors cursor-pointer"
                 onClick={() => handleTransactionClick("charge")}
               >
-                Alışveriş Ekle
+                {isDebtor ? "Satış Ekle" : "Alışveriş Ekle"}
               </button>
               <button
                 type="button"
@@ -172,10 +176,9 @@ const CustomerTransactionSheet = ({
                   onClose();
                 }}
               >
-                Müşteriyi Sil
+                {isDebtor ? "Müşteriyi Sil" : "Alacaklıyı Sil"}
               </button>
             </div>
-
             {/* İşlem Geçmişi */}
             {transactions.length > 0 && (
               <div className="mt-4">

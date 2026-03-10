@@ -5,5 +5,9 @@ type Props = {
 };
 
 export default function AppContainer({ children }: Props) {
-  return <div className="mx-auto max-w-2xl px-4 py-6">{children}</div>;
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-6 h-full overflow-hidden flex flex-col">
+      {children}
+    </div>
+  );
 }

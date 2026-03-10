@@ -27,10 +27,10 @@ export default function RootLayout({
   return (
     <html lang="tr" className="bg-slate-900">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-900 text-slate-100 min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-900 text-slate-100 h-screen overflow-hidden flex flex-col`}
       >
         <AppHeader />
-        <main>
+        <main className="flex-1 overflow-hidden">
           <AppContainer>{children}</AppContainer>
         </main>
       </body>
