@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, SyntheticEvent, ChangeEvent } from "react";
 import { HiExclamationTriangle } from "react-icons/hi2";
+import { toast } from "sonner";
 
 export type FormValues = {
   name: string;
@@ -44,8 +45,10 @@ export default function CustomerForm({ onAdd }: Props) {
       setError(null);
       await onAdd({ name, phone, note });
       setValues({ name: "", phone: "", note: "" });
+      toast.success("Müşteri başarıyla eklendi.");
     } catch {
       setError("Müşteri eklenirken bir hata oluştu.");
+      toast.error("Müşteri eklenirken bir hata oluştu.");
     } finally {
       setSubmitting(false);
     }
@@ -95,8 +98,30 @@ export default function CustomerForm({ onAdd }: Props) {
       <button
         type="submit"
         disabled={submitting}
-        className="mt-3 w-full rounded-lg bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-2.5 text-sm font-medium text-white transition-colors cursor-pointer"
+        className="mt-3 w-full rounded-lg bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-2.5 text-sm font-medium text-white transition-colors cursor-pointer flex items-center justify-center gap-2"
       >
+        {submitting && (
+          <svg
+            className="animate-spin h-4 w-4 text-white"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+        )}
         {submitting ? "Ekleniyor..." : "Ekle"}
       </button>
     </form>

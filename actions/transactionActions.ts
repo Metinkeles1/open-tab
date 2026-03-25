@@ -48,6 +48,40 @@ export async function addTransaction(values: {
   };
 }
 
+export async function updateTransaction(
+  transactionId: string,
+  values: {
+    type: "charge" | "payment";
+    amount: number;
+    note?: string;
+  },
+): Promise<TransactionType> {
+  await connectDB();
+
+  const transaction = await Transaction.findByIdAndUpdate(
+    transactionId,
+    {
+      type: values.type,
+      amount: values.amount,
+      note: values.note?.trim() || undefined,
+    },
+    { returnDocument: "after" },
+  );
+
+  if (!transaction) throw new Error("İşlem bulunamadı.");
+
+  revalidatePath("/");
+
+  return {
+    id: transaction._id.toString(),
+    customerId: transaction.customerId.toString(),
+    type: transaction.type,
+    amount: transaction.amount,
+    note: transaction.note ?? undefined,
+    createdAt: transaction.createdAt.toISOString(),
+  };
+}
+
 export async function deleteTransactionByCustomerId(
   customerId: string,
   transactionId: string,

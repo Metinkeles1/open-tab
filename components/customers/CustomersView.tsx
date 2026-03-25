@@ -24,6 +24,7 @@ const CustomersView = ({ mode }: { mode: Mode }) => {
     debtorCount,
     handleTransaction,
     handleDeleteTransaction,
+    handleUpdateTransaction,
   } = useTransactions(customerIds);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
   const selectedCustomer = customers?.find((c) => c.id === selectedCustomerId) || null;
@@ -135,6 +136,7 @@ const CustomersView = ({ mode }: { mode: Mode }) => {
         }
         onDeleteCustomer={handleDeleteCustomer}
         onDeleteTransaction={handleDeleteTransaction}
+        onUpdateTransaction={handleUpdateTransaction}
         mode={mode}
       />
     </div>

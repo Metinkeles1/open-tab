@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AppHeader from "@/components/layout/AppHeader";
 import AppContainer from "@/components/layout/AppContainer";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,17 @@ export default function RootLayout({
         <main className="flex-1 overflow-hidden">
           <AppContainer>{children}</AppContainer>
         </main>
+        <Toaster
+          position="bottom-center"
+          richColors
+          toastOptions={{
+            style: {
+              background: "#1e293b",
+              border: "1px solid #334155",
+              color: "#f1f5f9",
+            },
+          }}
+        />
       </body>
     </html>
   );

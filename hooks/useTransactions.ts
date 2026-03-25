@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   getTransactions,
   addTransaction,
+  updateTransaction,
   deleteTransactionByCustomerId,
 } from "@/actions/transactionActions";
 
@@ -108,6 +109,30 @@ export function useTransactions(customerIds?: string[]) {
     }
   };
 
+  const handleUpdateTransaction = async (
+    transactionId: string,
+    values: { type: "charge" | "payment"; amount: number; note?: string },
+  ): Promise<{ ok: boolean; error?: string }> => {
+    if (!values.amount || values.amount <= 0) {
+      return { ok: false, error: "Lütfen geçerli bir tutar girin." };
+    }
+    const previousTransactions = transactions;
+    setTransactions((prev) =>
+      prev.map((tx) => (tx.id === transactionId ? { ...tx, ...values } : tx)),
+    );
+    try {
+      const updated = await updateTransaction(transactionId, values);
+      setTransactions((prev) =>
+        prev.map((tx) => (tx.id === transactionId ? updated : tx)),
+      );
+      return { ok: true };
+    } catch (err) {
+      setTransactions(previousTransactions);
+      console.error("İşlem güncellenirken hata:", err);
+      return { ok: false, error: "İşlem güncellenemedi." };
+    }
+  };
+
   return {
     transactions,
     transactionByCustomerId,
@@ -118,6 +143,7 @@ export function useTransactions(customerIds?: string[]) {
     error,
     handleTransaction,
     handleDeleteTransaction,
+    handleUpdateTransaction,
     refetch: fetchTransactions,
   };
 }
